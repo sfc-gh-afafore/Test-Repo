@@ -32,7 +32,7 @@ def run():
         encryption_algorithm=serialization.NoEncryption())
 
     conn = st.connector("snowflake", role="readonly_role")
-    query = conn.query('select * from free_dataset_GZ1M6Z2R41Y.public.t_rbaseit limit 10;');
+    query = conn.query('select * from FREE_DATASET_GZTSZAS2KI6.public.t_rbaseit limit 10;');
     st.dataframe(query)
 
 
