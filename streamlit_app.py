@@ -19,18 +19,6 @@ LOGGER = get_logger(__name__)
 
 
 def run():
-    with open("../../../home/appuser/.streamlit/dataset-credentials.p8", "rb") as key:
-      p_key= serialization.load_pem_private_key(
-          key.read(),
-          password=None,
-          backend=default_backend()
-      )
-
-    pkb = p_key.private_bytes(
-        encoding=serialization.Encoding.DER,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption())
-
     conn = st.connector("snowflake", role="readonly_role")
     query = conn.query('select * from FREE_DATASET_GZTSZAS2KI6.public.t_rbaseit limit 10;');
     st.dataframe(query)
