@@ -19,7 +19,7 @@ LOGGER = get_logger(__name__)
 
 
 def run():
-    conn = st.connector("snowflake", role="readonly_role")
+    conn = st.experimental_connection("snowflake", role="readonly_role")
     query = conn.query('select * from FREE_DATASET_GZTSZAS2KI6.public.t_rbaseit limit 10;');
     st.dataframe(query)
 
