@@ -1,17 +1,3 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
 from streamlit.logger import get_logger
 
@@ -19,8 +5,27 @@ LOGGER = get_logger(__name__)
 
 
 def run():
-    conn = st.experimental_connection("snowflake", role="readonly_role")
-    query = conn.query('select * from FREE_DATASET_GZTSZAS2KI6.public.t_rbaseit limit 10;');
+    conn = st.connection("snowflake")
+    conn.cursor().execute('use database FREE_DATASET_GZTSZAS2KI6')
+    query = conn.query("""SELECT
+    	geo.geo_name AS zip_code,
+    	ROUND(agi.value / NULLIF(pop.value, 0), 0) AS per_capita_income
+    FROM cybersyn.irs_individual_income_timeseries agi -- Adjusted gross income values
+    JOIN  cybersyn.irs_individual_income_timeseries pop -- Population (number of individuals) values
+    	ON (pop.geo_id = agi.geo_id
+    	    AND pop.date = agi.date
+    	    AND pop.value IS NOT NULL
+    	    AND pop.date = '2020-12-31'
+    	    AND pop.variable_name = 'Number of individuals, AGI bin: Total')
+    JOIN cybersyn.geography_index geo
+        ON (agi.geo_id = geo.geo_id
+            AND geo.level = 'CensusZipCodeTabulationArea')
+    WHERE agi.variable_name = 'Adjusted gross income (AGI), AGI bin: Total'
+      AND agi.value IS NOT NULL
+      AND pop.value > 10000
+    ORDER BY per_capita_income DESC
+    LIMIT 5;
+    """)
     st.dataframe(query)
 
 
